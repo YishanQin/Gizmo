@@ -1,0 +1,24 @@
+#include <Servo.h> 
+Servo downservo; 
+Servo upservo; // Create servo object to control a servo
+int servoPin1 = 4;                // Connect yellow servo wire to digital I/O pin 4 
+int servoPin2 = 2;
+int val;                     // Data received from the serial port
+int val2;
+void setup() {
+  downservo.attach(servoPin1);      // Attach the servo to the PWM pin
+  upservo.attach(servoPin2);
+  Serial.begin(9600);           // Start serial communication at 9600 bps
+}
+
+void loop() {
+  if (Serial.available()) {      // If data is available to read,
+    val = Serial.read();         // read it and store it in val
+    val2 =  Serial.read();
+  }   
+  if ( 2 > Serial.available() > 0) {
+  upservo.write(val*0.4);
+  delay(15);   }
+  downservo.write(val*2.5);            // Set the servo position
+  delay(15);                     // Wait for the servo to get there
+}
