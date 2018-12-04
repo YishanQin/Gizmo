@@ -6,8 +6,8 @@ AudioInput in;
 Serial port;
 FFT fft;
 int highest=0;
-   boolean paused = false;
-   boolean start = true;
+boolean paused = false;
+boolean start = true;
 
 void setup()
 {
@@ -19,9 +19,8 @@ void setup()
   in = minim.getLineIn(Minim.MONO, 4096, 44100);
   fft = new FFT(in.left.size(), 44100);
   println((Object[])Serial.list());
-  port = new Serial(this, Serial.list()[0],9600); 
-   // Open the port that the board is connected to and use the same speed (9600 bps) 
-
+  port = new Serial(this, Serial.list()[0], 9600); 
+  // Open the port that the board is connected to and use the same speed (9600 bps)
 }
 
 void draw()
@@ -31,53 +30,53 @@ void draw()
   background(0);
   stroke(255);
 
-  fft.forward(in.left);
-  highest=0;
-  for (int n = 0; n < fft.specSize(); n++) {
-    // draw the line for frequency band n, scaling it by 4 so we can see it a bit better
-    line(n/4, height, n/4, height - fft.getBand(n)*4);
-    //line(highest, height, highest, height - fft.getBand(highest)*4);
+  if (paused) {
+    port.write(0);
+    return;
+  } else {
 
-    //find frequency with highest amplitude
-    if (fft.getBand(n)>fft.getBand(highest/8))
-      highest=n;
-  }
-  println(highest);
+    fft.forward(in.left);
+    highest=0;
+    for (int n = 0; n < fft.specSize(); n++) {
+      // draw the line for frequency band n, scaling it by 4 so we can see it a bit better
+      line(n/4, height, n/4, height - fft.getBand(n)*4);
+      //line(highest, height, highest, height - fft.getBand(highest)*4);
 
-  //println(fft.getFreq(110));
-  // draw the waveforms
-  for (int i = 0; i < in.bufferSize() - 1; i++)
-  {
-    line(i, 50 + in.left.get(i)*50, i+1, 50 + in.left.get(i+1)*50);
-    line(i, 150 + in.right.get(i)*50, i+1, 150 + in.right.get(i+1)*50);
-  }
-   int angle = highest/30;
-   port.write(angle);
-
- 
- }
-   
-   void myDelay(int ms) {
-   try {
-   Thread.sleep(ms);
-   }
-   catch(Exception e) {}
-   }
-   
-  
-   
-void keyPressed(){
-  final int k = keyCode;
-  if (k=='S') {
-    if(looping){
-      noLoop();
-      port.write(0);
+      //find frequency with highest amplitude
+      if (fft.getBand(n)>fft.getBand(highest/8))
+        highest=n;
     }
-    else loop();
+    println(highest);
+
+    //println(fft.getFreq(110));
+    // draw the waveforms
+    for (int i = 0; i < in.bufferSize() - 1; i++)
+    {
+      line(i, 50 + in.left.get(i)*50, i+1, 50 + in.left.get(i+1)*50);
+      line(i, 150 + in.right.get(i)*50, i+1, 150 + in.right.get(i+1)*50);
+    }
+    int angle = highest/50;
+    port.write(angle);
   }
-
-
 }
+
+void myDelay(int ms) {
+  try {
+    Thread.sleep(ms);
+  }
+  catch(Exception e) {
+  }
+}
+
+
+
+void keyPressed() {
+  final int k = keyCode;
+  if (k=='S') { 
+    paused = !paused;
+  }
+}
+
 void stop()
 {
   // always close Minim audio classes when you are done with them
